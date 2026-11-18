@@ -47,6 +47,31 @@ BDV_predictors_cleaned <- BDV_predictors %>%
     Moths = `Moths (0.566)`
   )
 
+# Write the statistical summary table
+# Identify all numeric predictors and biodiversity variables
+BDV_statistics <- BDV_predictors_cleaned %>%
+  pivot_longer(
+    cols = where(is.numeric),
+    names_to = "Variable",
+    values_to = "Value"
+  ) %>%
+  group_by(forest_cat, Variable) %>%
+  summarise(
+    N = sum(!is.na(Value)),
+    Mean = mean(Value, na.rm = TRUE),
+    SD = sd(Value, na.rm = TRUE),
+    Median = median(Value, na.rm = TRUE),
+    Q1 = quantile(Value, 0.25, na.rm = TRUE),
+    Q3 = quantile(Value, 0.75, na.rm = TRUE),
+    Min = min(Value, na.rm = TRUE),
+    Max = max(Value, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(Variable, forest_cat)
+
+# --- Export to Excel --- #
+write.xlsx(list( Descriptive_Statistics = BDV_statistics), file = "BDV_Descriptive_Statistics_by_Forest_Category.xlsx", overwrite = TRUE)
+
 
 # Reshape data: Convert taxonomic groups from columns to rows
 BDV_long <- BDV_predictors_cleaned %>%
